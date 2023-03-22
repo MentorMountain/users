@@ -41,26 +41,44 @@ export async function validateSFUTicket(
       serviceResponseKey in sfuData &&
       authSuccessKey in sfuData[serviceResponseKey];
 
-    isAuthSuccess =
+    if (!isAuthSuccess) {
+      return {
+        courses: [],
+        success: false,
+        error: "Invalid SFU login",
+      };
+    }
+
+    const isStudent =
       isAuthSuccess &&
       sfuData[serviceResponseKey][authSuccessKey][casAttributesKey][
         casEduAffiliationKey
-      ] === "student"; // Must be a student
+      ] === "student";
 
-    if (isAuthSuccess) {
-      const authData = sfuData[serviceResponseKey][authSuccessKey];
-
-      validation.success = true;
-      validation.computingID = authData[casUserKey];
-      validation.courses = authData[casAttributesKey][casMemberKey].filter(
-        (membership: string) => isCourse(membership)
-      );
+    if (!isStudent) {
+      return {
+        courses: [],
+        success: false,
+        error: "Not a student",
+      };
     }
+
+    const authData = sfuData[serviceResponseKey][authSuccessKey];
+
+    return {
+      success: true,
+      courses: authData[casAttributesKey][casMemberKey].filter(
+        (membership: string) => isCourse(membership)
+      ),
+      computingID: authData[casUserKey],
+    };
   } catch (e) {
     console.error("SFU CAS Verify error", e);
-    validation.success = false;
-    validation.error = JSON.stringify(e);
-  }
 
-  return validation;
+    return {
+      success: false,
+      courses: [],
+      error: JSON.stringify(e),
+    };
+  }
 }
