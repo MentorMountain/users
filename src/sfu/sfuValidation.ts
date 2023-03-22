@@ -27,8 +27,6 @@ export async function validateSFUTicket(
   const casMemberKey = "cas:member";
   const casEduAffiliationKey = "cas:eduPersonAffiliation";
 
-  const validation: SFUValidation = { success: false, courses: [] };
-
   try {
     const response = await axios.get("https://cas.sfu.ca/cas/serviceValidate", {
       params: { service: referrer, ticket: ticket },
