@@ -16,6 +16,7 @@ export async function validateSFUTicket(
   const casUserKey = "cas:user";
 
   try {
+    // E.G. Client redirects to: https://cas.sfu.ca/cas/login?renew=true&service=https://localhost:3030/login
     const response = await axios.get("https://cas.sfu.ca/cas/serviceValidate", {
       params: { service: referrer, ticket: ticket, renew: 'true' },
     });
