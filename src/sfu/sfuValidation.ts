@@ -22,8 +22,6 @@ export async function validateSFUTicket(
   const serviceResponseKey = "cas:serviceResponse";
   const authSuccessKey = "cas:authenticationSuccess";
   const casUserKey = "cas:user";
-  const casAttributesKey = "cas:attributes";
-  const casEduAffiliationKey = "cas:eduPersonAffiliation";
 
   try {
     const response = await axios.get("https://cas.sfu.ca/cas/serviceValidate", {
@@ -43,26 +41,6 @@ export async function validateSFUTicket(
         error: "Invalid SFU login",
       };
     }
-
-    console.log(sfuData[serviceResponseKey]);
-
-    const isStudent =
-      isAuthSuccess &&
-      sfuData[serviceResponseKey][authSuccessKey][casAttributesKey][
-        casEduAffiliationKey
-      ] === "student";
-
-    if (!isStudent) {
-      return {
-        success: false,
-        error: "Not a student",
-      };
-    }
-
-    console.log(
-      casAttributesKey,
-      sfuData[serviceResponseKey][authSuccessKey][casAttributesKey]
-    );
 
     const authData = sfuData[serviceResponseKey][authSuccessKey];
 
