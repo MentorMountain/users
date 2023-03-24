@@ -7,14 +7,6 @@ export interface SFUValidation {
   error?: string;
 }
 
-const courseRegex = new RegExp(
-  "^(?:[a-zA-Z]+-\\d{3})$|^(?:[a-zA-Z]+\\d{3}(?:-\\w+)?)$"
-);
-
-function isCourse(membership: string) {
-  return courseRegex.test(membership);
-}
-
 export async function validateSFUTicket(
   referrer: string,
   ticket: string
