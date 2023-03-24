@@ -63,8 +63,6 @@ app.post("/api/login-validate", async (req: Request, res: Response) => {
   return res.json({
     success: true,
     token: token,
-    courses: courses, // TODO: want to put the courses inside the JWT token to ensure integrity
-    computingID: computingID, // TODO: want to put computingID inside the JWT token to ensure integrity
   } as LoginValidationResponse);
 });
 
