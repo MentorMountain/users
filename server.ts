@@ -1,8 +1,9 @@
-import express, { Express, Request, Response } from "express";
 import cors from "cors";
-import { validateSFUTicket } from "./src/sfu/sfuValidation";
+import express, { Express, Request, Response } from "express";
 import { LoginValidationResponse } from "./src/LoginValidationResponse";
+import { validateSFUTicket } from "./src/sfu/sfuValidation";
 
+import { generateLoginToken } from "cmpt474-mm-jwt-middleware";
 import ENV from "./env";
 
 const app: Express = express();
@@ -29,12 +30,6 @@ app.use(cors({ origin: "*" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get("/api/login", (_: Request, res: Response) => {
-  return res.redirect(
-    `https://cas.sfu.ca/cas/login?service=${ENV.FRONTEND_LOGIN_URL}`
-  );
-});
-
 app.post("/api/login-validate", async (req: Request, res: Response) => {
   const { referrer, sfuToken } = req.body;
 
@@ -50,13 +45,20 @@ app.post("/api/login-validate", async (req: Request, res: Response) => {
     sfuToken
   );
 
-  if (!success) {
+  if (!success || computingID === undefined) {
     return res
       .status(403)
       .send({ success: false, error: error } as LoginValidationResponse);
   }
 
-  const token = ""; // TODO
+  const token = generateLoginToken(
+    { computingID, role: "student", courses }, // TODO: Pull role from user DB
+    {
+      JWT_SECRET: ENV.JWT_SECRET,
+      GATEWAY_DOMAIN: ENV.GATEWAY_DOMAIN,
+      WEBAPP_DOMAIN: ENV.WEBAPP_DOMAIN,
+    }
+  );
 
   return res.json({
     success: true,

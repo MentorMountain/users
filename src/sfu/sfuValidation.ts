@@ -61,6 +61,8 @@ export async function validateSFUTicket(
       };
     }
 
+    console.log(casAttributesKey, sfuData[serviceResponseKey][authSuccessKey][casAttributesKey])
+
     const authData = sfuData[serviceResponseKey][authSuccessKey];
 
     return {
