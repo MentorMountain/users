@@ -5,7 +5,6 @@ export interface SFUValidation {
   computingID?: string;
   success: boolean;
   error?: string;
-  courses: string[];
 }
 
 const courseRegex = new RegExp(
@@ -24,7 +23,6 @@ export async function validateSFUTicket(
   const authSuccessKey = "cas:authenticationSuccess";
   const casUserKey = "cas:user";
   const casAttributesKey = "cas:attributes";
-  const casMemberKey = "cas:member";
   const casEduAffiliationKey = "cas:eduPersonAffiliation";
 
   try {
@@ -41,11 +39,12 @@ export async function validateSFUTicket(
 
     if (!isAuthSuccess) {
       return {
-        courses: [],
         success: false,
         error: "Invalid SFU login",
       };
     }
+
+    console.log(sfuData[serviceResponseKey]);
 
     const isStudent =
       isAuthSuccess &&
@@ -55,21 +54,20 @@ export async function validateSFUTicket(
 
     if (!isStudent) {
       return {
-        courses: [],
         success: false,
         error: "Not a student",
       };
     }
 
-    console.log(casAttributesKey, sfuData[serviceResponseKey][authSuccessKey][casAttributesKey])
+    console.log(
+      casAttributesKey,
+      sfuData[serviceResponseKey][authSuccessKey][casAttributesKey]
+    );
 
     const authData = sfuData[serviceResponseKey][authSuccessKey];
 
     return {
       success: true,
-      courses: authData[casAttributesKey][casMemberKey].filter(
-        (membership: string) => isCourse(membership)
-      ),
       computingID: authData[casUserKey],
     };
   } catch (e) {
@@ -77,7 +75,6 @@ export async function validateSFUTicket(
 
     return {
       success: false,
-      courses: [],
       error: JSON.stringify(e),
     };
   }

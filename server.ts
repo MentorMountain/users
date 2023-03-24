@@ -40,7 +40,7 @@ app.post("/api/login-validate", async (req: Request, res: Response) => {
     } as LoginValidationResponse);
   }
 
-  const { success, computingID, courses, error } = await validateSFUTicket(
+  const { success, computingID, error } = await validateSFUTicket(
     referrer,
     sfuToken
   );
@@ -52,7 +52,7 @@ app.post("/api/login-validate", async (req: Request, res: Response) => {
   }
 
   const token = generateLoginToken(
-    { computingID, role: "student", courses }, // TODO: Pull role from user DB
+    { computingID, role: "student" }, // TODO: Pull role from user DB
     {
       JWT_SECRET: ENV.JWT_SECRET,
       GATEWAY_DOMAIN: ENV.GATEWAY_DOMAIN,
