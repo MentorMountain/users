@@ -17,7 +17,7 @@ export async function validateSFUTicket(
 
   try {
     const response = await axios.get("https://cas.sfu.ca/cas/serviceValidate", {
-      params: { service: referrer, ticket: ticket },
+      params: { service: referrer, ticket: ticket, renew: 'true' },
     });
 
     const parser = new XMLParser();
