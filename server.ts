@@ -1,12 +1,17 @@
 import cors from "cors";
-import express, { Express, Request, Response } from "express";
+import express, { Application, Request, Response } from "express";
 import { LoginValidationResponse } from "./src/LoginValidationResponse";
 import { validateSFUTicket } from "./src/sfu/sfuValidation";
 
-import { generateLoginToken } from "cmpt474-mm-jwt-middleware";
+import {
+  generateLoginToken,
+  LoginTokenizedRequest,
+  LoginTokenParameters,
+  validateLoginToken,
+} from "cmpt474-mm-jwt-middleware";
 import ENV from "./env";
 
-const app: Express = express();
+const app: Application = express();
 const port: number = (process.env.PORT && parseInt(process.env.PORT)) || 8080;
 // https://www.npmjs.com/package/cors
 const whitelist = [
@@ -14,6 +19,12 @@ const whitelist = [
   "https://www.mentormountain.ca",
   "https://www.sfu.ca",
 ];
+
+const LOGIN_TOKEN_VALIDATION_PARAMETERS: LoginTokenParameters = {
+  JWT_SECRET: ENV.JWT_SECRET,
+  GATEWAY_DOMAIN: ENV.GATEWAY_DOMAIN,
+  WEBAPP_DOMAIN: ENV.WEBAPP_DOMAIN,
+};
 
 const corsOptions = {
   origin: function (origin: any, callback: any) {
@@ -66,15 +77,25 @@ app.post("/api/login-validate", async (req: Request, res: Response) => {
   } as LoginValidationResponse);
 });
 
-app.post("/api/mentor-apply", (request: Request, res: Response) => {
-  const {applicationCode} = request.body;
-  if (!applicationCode) {
-    return res.status(400).send();
+app.post(
+  "/api/mentor-apply",
+  validateLoginToken(LOGIN_TOKEN_VALIDATION_PARAMETERS),
+  (request: Request, res: Response) => {
+    const systemRequest = request as LoginTokenizedRequest;
+
+    const { applicationCode } = systemRequest.body;
+    if (!applicationCode) {
+      return res.status(400).send();
+    }
+
+    // TODO: Update user DB
+    return res
+      .status(500)
+      .send(
+        `UNIMPLEMENTED\n${systemRequest.user.computingID}\n${systemRequest.user.role}`
+      );
   }
-  
-  // TODO: Update user DB
-  return res.status(500).send("UNIMPLEMENTED");
-});
+);
 
 app.get("/api/health", (_: Request, res: Response) => {
   res.json({
