@@ -66,6 +66,16 @@ app.post("/api/login-validate", async (req: Request, res: Response) => {
   } as LoginValidationResponse);
 });
 
+app.post("/api/mentor-apply", (request: Request, res: Response) => {
+  const {applicationCode} = request.body;
+  if (!applicationCode) {
+    return res.status(400).send();
+  }
+  
+  // TODO: Update user DB
+  return res.status(500).send("UNIMPLEMENTED");
+});
+
 app.get("/api/health", (_: Request, res: Response) => {
   res.json({
     health: "OK",
