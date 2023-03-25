@@ -92,7 +92,7 @@ app.post(
     return res
       .status(500)
       .send(
-        `UNIMPLEMENTED\n${systemRequest.user.computingID}\n${systemRequest.user.role}`
+        `UNIMPLEMENTED\n${systemRequest.user.computingID}\n${systemRequest.user.role}\n${applicationCode}`
       );
   }
 );
