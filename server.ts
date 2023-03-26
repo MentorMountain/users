@@ -36,7 +36,7 @@ const corsOptions = {
   },
 };
 
-  app.use(cors(corsOptions));
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -55,7 +55,7 @@ app.post("/api/login-validate", async (req: Request, res: Response) => {
     sfuToken
   );
 
-  if (!success || computingID === undefined) {
+  if (!success || !computingID) {
     return res
       .status(403)
       .send({ success: false, error: error } as LoginValidationResponse);
