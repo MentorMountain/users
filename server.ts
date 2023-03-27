@@ -13,6 +13,13 @@ import ENV from "./env";
 
 const app: Application = express();
 const port: number = (process.env.PORT && parseInt(process.env.PORT)) || 8080;
+
+app.get("/api/health", (_: Request, res: Response) => {
+  res.json({
+    health: "OK",
+  });
+});
+
 // https://www.npmjs.com/package/cors
 const whitelist = [
   "https://mentormountain.ca",
@@ -95,12 +102,6 @@ app.post(
       );
   }
 );
-
-app.get("/api/health", (_: Request, res: Response) => {
-  res.json({
-    health: "OK",
-  });
-});
 
 app.listen(port, () => {
   console.log(`Attaching to port ${port}`);
