@@ -86,7 +86,10 @@ app.post(
     const { applicationCode } = systemRequest.body;
 
     if (!applicationCode) {
-      return res.status(400).send();
+      return res.status(400).send("Missing mentor application code");
+    }
+    if (applicationCode !== ENV.MENTOR_APPLICATION_PASSWORD) {
+      return res.status(403).send("Wrong mentor application code");
     }
 
     const computingID = systemRequest.user.computingID;
@@ -104,7 +107,7 @@ app.post(
     }
 
     const token = loginTokenGenerator({ computingID, role: mentorRole });
-    return res.status(204).json(token);
+    return res.status(200).json(token);
   }
 );
 
