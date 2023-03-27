@@ -12,10 +12,12 @@ function getUserCollection(): FirebaseFirestore.CollectionReference<DocumentData
   return firestore.collection(ENV.DB_COLLECTION_NAME);
 }
 
+async function getDBUser(computingID: string) {
+  return getUserCollection().where("computingID", "==", computingID).get();
+}
+
 export async function getUser(computingID: string): Promise<UserResult> {
-  const results = await getUserCollection()
-    .where("computingID", "==", computingID)
-    .get();
+  const results = await getDBUser(computingID);
 
   if (results.empty) {
     return {
@@ -67,13 +69,19 @@ async function addUser(user: User) {
 }
 
 export async function updateUser(user: User): Promise<boolean> {
-  if (!(await doesUserExist(user.computingID))) {
+  const dbData = await getDBUser(user.computingID);
+
+  if (dbData.empty) {
     return false;
   }
 
+  const dbUser = dbData.docs[0];
+  const dbID = dbUser.id;
+
   try {
-    const result = await getUserCollection().add(user);
-    console.log(`UPDATE USER DB: (${result.id}): ${user}`);
+    await getUserCollection()
+      .doc(dbID)
+      .update({ ...user });
     return true;
   } catch (e: any) {
     console.error(JSON.stringify(e));
