@@ -10,6 +10,7 @@ import {
   validateLoginToken,
 } from "cmpt474-mm-jwt-middleware";
 import ENV from "./env";
+import { doesUserExist, getUser, registerUser } from "./src/users/UserDB";
 
 const app: Application = express();
 const port: number = (process.env.PORT && parseInt(process.env.PORT)) || 8080;
@@ -50,14 +51,21 @@ app.post("/api/login-validate", async (req: Request, res: Response) => {
       .send({ success: false, error: error } as LoginValidationResponse);
   }
 
-  const token = generateLoginToken(
-    { computingID, role: "student" }, // TODO: Pull role from user DB
-    {
-      JWT_SECRET: ENV.JWT_SECRET,
-      GATEWAY_DOMAIN: ENV.GATEWAY_DOMAIN,
-      WEBAPP_DOMAIN: ENV.WEBAPP_DOMAIN,
-    }
-  );
+  if (!(await doesUserExist(computingID))) {
+    console.log(`USERS: Adding ${computingID} to the system`);
+    await registerUser(computingID);
+  }
+
+  const userData = await getUser(computingID);
+  if (!userData.found) {
+    return res.status(500).send("Failed to register new SFU member");
+  }
+
+  const token = generateLoginToken(userData.user!, {
+    JWT_SECRET: ENV.JWT_SECRET,
+    GATEWAY_DOMAIN: ENV.GATEWAY_DOMAIN,
+    WEBAPP_DOMAIN: ENV.WEBAPP_DOMAIN,
+  });
 
   return res.json({
     success: true,
