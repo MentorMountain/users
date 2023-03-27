@@ -14,38 +14,20 @@ import ENV from "./env";
 const app: Application = express();
 const port: number = (process.env.PORT && parseInt(process.env.PORT)) || 8080;
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors({ origin: "*" }));
 app.get("/api/health", (_: Request, res: Response) => {
   res.json({
     health: "OK",
   });
 });
 
-// https://www.npmjs.com/package/cors
-const whitelist = [
-  "https://mentormountain.ca",
-  "https://www.mentormountain.ca",
-  "https://www.sfu.ca",
-];
-
 const LOGIN_TOKEN_VALIDATION_PARAMETERS: LoginTokenParameters = {
   JWT_SECRET: ENV.JWT_SECRET,
   GATEWAY_DOMAIN: ENV.GATEWAY_DOMAIN,
   WEBAPP_DOMAIN: ENV.WEBAPP_DOMAIN,
 };
-
-const corsOptions = {
-  origin: function (origin: any, callback: any) {
-    if (whitelist.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-};
-
-app.use(cors(corsOptions));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 app.post("/api/login-validate", async (req: Request, res: Response) => {
   const { referrer, sfuToken } = req.body;
