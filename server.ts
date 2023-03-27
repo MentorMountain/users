@@ -57,7 +57,7 @@ app.post("/api/login/validate", async (req: Request, res: Response) => {
 
   if (!success || !computingID) {
     return res
-      .status(403)
+      .status(401)
       .send({ success: false, error: error } as LoginValidationResponse);
   }
 
@@ -93,7 +93,7 @@ app.post(
     }
 
     if (applicationCode !== ENV.MENTOR_APPLICATION_PASSWORD) {
-      return res.status(403).send({
+      return res.status(400).send({
         success: false,
         error: "Incorrect mentor application code",
       } as LoginValidationResponse);
