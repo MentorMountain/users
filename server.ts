@@ -40,7 +40,7 @@ const LOGIN_TOKEN_VALIDATION_PARAMETERS: LoginTokenParameters = {
 const loginTokenGenerator = (loginParameters: LoginParameters) =>
   generateLoginToken(loginParameters, LOGIN_TOKEN_VALIDATION_PARAMETERS);
 
-app.post("/api/login-validate", async (req: Request, res: Response) => {
+app.post("/api/login/validate", async (req: Request, res: Response) => {
   const { referrer, sfuToken } = req.body;
 
   if (!referrer || !sfuToken) {
@@ -79,35 +79,51 @@ app.post("/api/login-validate", async (req: Request, res: Response) => {
 });
 
 app.post(
-  "/api/mentor-apply",
+  "/api/login/apply-mentor",
   validateLoginToken(LOGIN_TOKEN_VALIDATION_PARAMETERS),
   async (request: Request, res: Response) => {
     const systemRequest = request as LoginTokenizedRequest;
     const { applicationCode } = systemRequest.body;
 
     if (!applicationCode) {
-      return res.status(400).send("Missing mentor application code");
+      return res.status(400).send({
+        success: false,
+        error: "Missing mentor application code",
+      } as LoginValidationResponse);
     }
+
     if (applicationCode !== ENV.MENTOR_APPLICATION_PASSWORD) {
-      return res.status(403).send("Wrong mentor application code");
+      return res.status(403).send({
+        success: false,
+        error: "Incorrect mentor application code",
+      } as LoginValidationResponse);
     }
 
     const computingID = systemRequest.user.computingID;
     const userData = await getUser(computingID);
 
     if (userData.user!.role === "mentor") {
-      return res.status(400).send("Already a mentor");
+      return res.status(400).send({
+        success: false,
+        error: "Already a mentor",
+      } as LoginValidationResponse);
     }
 
     const mentorRole: UserRole = "mentor";
     const updateSuccess = await updateUser({ computingID, role: mentorRole });
 
     if (!updateSuccess) {
-      return res.status(500).send(`Failed to give ${computingID} mentor role`);
+      return res.status(500).send({
+        success: false,
+        error: `Failed to give ${computingID} mentor role`,
+      } as LoginValidationResponse);
     }
 
     const token = loginTokenGenerator({ computingID, role: mentorRole });
-    return res.status(200).json(token);
+    return res.status(200).json({
+      success: true,
+      token: token,
+    } as LoginValidationResponse);
   }
 );
 
