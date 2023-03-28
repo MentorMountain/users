@@ -33,14 +33,13 @@ app.get("/api/health", cors({ origin: "*" }), (_: Request, res: Response) => {
 
 const corsOptions = {
   origin: function (origin: any, callback: any) {
-    if ([ENV.WEBAPP_DOMAIN, 'http://localhost:3000'].indexOf(origin) !== -1) {
+    if ([ENV.WEBAPP_DOMAIN, "http://localhost:3000"].indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));
     }
   },
 };
-
 
 app.use(cors(corsOptions));
 
@@ -69,6 +68,11 @@ app.post("/api/login/validate", async (req: Request, res: Response) => {
   );
 
   if (!success || !computingID) {
+    console.warn(
+      `USERS: SFU validation failed. success: ${success}, computingID: ${computingID}, error: ${JSON.stringify(
+        error
+      )}`
+    );
     return res
       .status(401)
       .send({ success: false, error: error } as LoginValidationResponse);
