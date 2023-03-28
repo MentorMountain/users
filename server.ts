@@ -89,6 +89,9 @@ app.post("/api/login/validate", async (req: Request, res: Response) => {
   }
 
   const token = loginTokenGenerator(userData.user!);
+
+  console.log(`USERS: ${computingID} successfully logged in`);
+
   return res.json({
     success: true,
     token: token,
