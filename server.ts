@@ -108,7 +108,7 @@ app.get(
     const userToken = systemRequest.user;
     const userData = await getUser(userToken.computingID);
 
-    const failedResponse = () => response.status(401).json({ status: "FAIL" });
+    const failedResponse = () => response.status(401).json({ status: false });
 
     // Check user still exists
     if (!userData.user) {
@@ -122,7 +122,7 @@ app.get(
       return failedResponse();
     }
 
-    return response.status(200).json({ status: "OK" });
+    return response.status(200).json({ status: true });
   }
 );
 
