@@ -103,7 +103,25 @@ const loginValidator = validateLoginToken(LOGIN_TOKEN_VALIDATION_PARAMETERS);
 app.get(
   "/api/login/introspection",
   loginValidator,
-  async (_: Request, response: Response) => {
+  async (request: Request, response: Response) => {
+    const systemRequest = request as LoginTokenizedRequest;
+    const userToken = systemRequest.user;
+    const userData = await getUser(userToken.computingID);
+
+    const failedResponse = () => response.status(401).json({ status: "FAIL" });
+
+    // Check user still exists
+    if (!userData.user) {
+      return failedResponse();
+    }
+
+    const latestUser = userData.user;
+
+    // Verify contents are up-to-date
+    if (userToken.role !== latestUser.role) {
+      return failedResponse();
+    }
+
     return response.status(200).json({ status: "OK" });
   }
 );
