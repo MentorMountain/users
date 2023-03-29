@@ -98,6 +98,16 @@ app.post("/api/login/validate", async (req: Request, res: Response) => {
   } as LoginValidationResponse);
 });
 
+const loginValidator = validateLoginToken(LOGIN_TOKEN_VALIDATION_PARAMETERS);
+
+app.get(
+  "/api/login/introspection",
+  loginValidator,
+  async (_: Request, response: Response) => {
+    return response.status(200).json({ status: "OK" });
+  }
+);
+
 app.post(
   "/api/login/apply-mentor",
   validateLoginToken(LOGIN_TOKEN_VALIDATION_PARAMETERS),
