@@ -136,14 +136,14 @@ app.post(
     if (!applicationCode) {
       return res.status(400).send({
         success: false,
-        error: "Missing mentor application code",
+        error: `Missing mentor application code. Got \"${applicationCode}\"`,
       } as LoginValidationResponse);
     }
 
     if (applicationCode !== ENV.MENTOR_APPLICATION_PASSWORD) {
       return res.status(400).send({
         success: false,
-        error: "Incorrect mentor application code",
+        error: `Incorrect mentor application code. Got \"${applicationCode}\"`,
       } as LoginValidationResponse);
     }
 
