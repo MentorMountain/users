@@ -56,11 +56,9 @@ const loginTokenGenerator = (loginParameters: LoginParameters) =>
   generateLoginToken(loginParameters, LOGIN_TOKEN_VALIDATION_PARAMETERS);
 
 app.post("/api/login", async (req: Request, res: Response) => {
-  console.log(
-    "USERS: Processing login request from",
-    req.header("X-Forwarded-Proto")
-  );
+  console.log("USERS: Processing login request from", req.get("Referrer"));
   const { username, password, captchaResponse } = req.body;
+  const referrer = req.get("Referrer") || "";
 
   if (!isValidUserCredentials(username, password) || !captchaResponse) {
     return res.status(400).send({
@@ -69,7 +67,7 @@ app.post("/api/login", async (req: Request, res: Response) => {
     } as LoginResponse);
   }
 
-  if (!(await verifyCaptcha(captchaResponse, "TODO"))) {
+  if (!(await verifyCaptcha(captchaResponse, referrer))) {
     return res
       .status(400)
       .send({ success: false, error: "Invalid captcha" } as LoginResponse);
@@ -99,6 +97,7 @@ app.post("/api/login", async (req: Request, res: Response) => {
 
 app.post("/api/login/signup", async (req: Request, res: Response) => {
   const { username, password, captchaResponse } = req.body;
+  const referrer = req.get("Referrer") || "";
 
   if (!isValidUserCredentials(username, password) || !captchaResponse) {
     return res.status(400).json({
@@ -107,7 +106,7 @@ app.post("/api/login/signup", async (req: Request, res: Response) => {
     } as LoginResponse);
   }
 
-  if (!(await verifyCaptcha(captchaResponse, "TODO"))) {
+  if (!(await verifyCaptcha(captchaResponse, referrer))) {
     return res
       .status(400)
       .json({ success: false, error: "Invalid captcha" } as LoginResponse);

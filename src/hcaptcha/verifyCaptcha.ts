@@ -2,9 +2,17 @@ import axios from "axios";
 import ENV from "../../env";
 
 const TEST_CLIENT_RESPONSE = "10000000-aaaa-bbbb-cccc-000000000001";
+const LOCALHOST_CLIENT = "http://localhost:3000";
 
-export async function verifyCaptcha(clientResponse: string, source: string) {
-  if (clientResponse === TEST_CLIENT_RESPONSE) {
+export async function verifyCaptcha(clientResponse: string, referrer: string) {
+  if (!referrer.startsWith(ENV.WEBAPP_DOMAIN)) {
+    return false;
+  }
+
+  if (
+    clientResponse === TEST_CLIENT_RESPONSE &&
+    referrer.startsWith(LOCALHOST_CLIENT)
+  ) {
     console.warn("USERS: ACCEPTING CAPTCHA TEST RESPONSE");
     // TODO check source
     return true;
