@@ -22,7 +22,9 @@ export async function verifyCaptcha(clientResponse: string, source: string) {
 
     console.log("CAPTCHA RESPONSE", response.data?.success, response.data);
 
-    return response.data?.success === true;
+    const { success, hostname } = response.data;
+
+    return success === true && hostname === "appspot.com";
   } catch (e) {
     console.log("CAPTCHA ERROR", e);
     return false;
