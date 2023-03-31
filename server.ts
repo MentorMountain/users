@@ -92,7 +92,7 @@ app.post("/api/login/signup", async (req: Request, res: Response) => {
     return res.status(400).send("Invalid user signup request");
   }
 
-  if (await getUser(username)) {
+  if (await doesUserExist(username)) {
     return res.status(400).send("User already exists");
   }
 
