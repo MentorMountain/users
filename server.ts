@@ -1,7 +1,6 @@
 import cors from "cors";
 import express, { Application, Request, Response } from "express";
-import { LoginValidationResponse } from "./src/LoginValidationResponse";
-import { validateSFUTicket } from "./src/sfu/sfuValidation";
+import { LoginValidationResponse as LoginResponse } from "./src/LoginValidationResponse";
 
 import {
   generateLoginToken,
@@ -14,10 +13,12 @@ import {
 import ENV from "./env";
 import {
   doesUserExist,
+  findUser,
   getUser,
   registerUser,
   updateUser,
 } from "./src/users/UserDB";
+import { UserToken } from "cmpt474-mm-jwt-middleware/src/User";
 
 const app: Application = express();
 const port: number = (process.env.PORT && parseInt(process.env.PORT)) || 8080;
@@ -52,50 +53,53 @@ const LOGIN_TOKEN_VALIDATION_PARAMETERS: LoginTokenParameters = {
 const loginTokenGenerator = (loginParameters: LoginParameters) =>
   generateLoginToken(loginParameters, LOGIN_TOKEN_VALIDATION_PARAMETERS);
 
-app.post("/api/login/validate", async (req: Request, res: Response) => {
-  const { referrer, sfuToken } = req.body;
+app.post("/api/login", async (req: Request, res: Response) => {
+  const { username, password } = req.body;
 
-  if (!referrer || !sfuToken) {
+  if (!username || !password) {
     return res.status(400).send({
       success: false,
-      error: "Incomplete validation request",
-    } as LoginValidationResponse);
+      error: "Invalid login request",
+    } as LoginResponse);
   }
 
-  const { success, computingID, error } = await validateSFUTicket(
-    referrer,
-    sfuToken
-  );
-
-  if (!success || !computingID) {
-    console.warn(
-      `USERS: SFU validation failed. success: ${success}, computingID: ${computingID}, error: ${JSON.stringify(
-        error
-      )}`
-    );
-    return res
-      .status(401)
-      .send({ success: false, error: error } as LoginValidationResponse);
-  }
-
-  if (!(await doesUserExist(computingID))) {
-    console.log(`USERS: Adding ${computingID} to the system`);
-    await registerUser(computingID);
-  }
-
-  const userData = await getUser(computingID);
+  const userData = await findUser(username, password);
   if (!userData.found) {
-    return res.status(500).send("Failed to register new SFU member");
+    return res
+      .status(400)
+      .send({ success: false, error: "User doesn't exist" } as LoginResponse);
   }
 
-  const token = loginTokenGenerator(userData.user!);
+  const userTokenData: UserToken = {
+    username: username,
+    role: userData.user!.role!,
+  };
+  const token = loginTokenGenerator(userTokenData);
 
-  console.log(`USERS: ${computingID} successfully logged in`);
+  console.log(`USERS: ${username} successfully logged in`);
 
   return res.json({
     success: true,
     token: token,
-  } as LoginValidationResponse);
+  } as LoginResponse);
+});
+
+app.post("/api/login/signup", async (req: Request, res: Response) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res.status(400).send("Invalid user signup request");
+  }
+
+  if (await getUser(username)) {
+    return res.status(400).send("User already exists");
+  }
+
+  if (await registerUser(username, password)) {
+    return res.status(200).send();
+  }
+
+  return res.status(500).send();
 });
 
 const loginValidator = validateLoginToken(LOGIN_TOKEN_VALIDATION_PARAMETERS);
@@ -106,11 +110,10 @@ app.get(
   async (request: Request, response: Response) => {
     const systemRequest = request as LoginTokenizedRequest;
     const userToken = systemRequest.user;
-    const userData = await getUser(userToken.computingID);
-
     const failedResponse = () => response.status(401).json({ status: false });
 
     // Check user still exists
+    const userData = await getUser(userToken.username);
     if (!userData.user) {
       return failedResponse();
     }
@@ -137,41 +140,41 @@ app.post(
       return res.status(400).send({
         success: false,
         error: `Missing mentor application code. Got \"${applicationCode}\"`,
-      } as LoginValidationResponse);
+      } as LoginResponse);
     }
 
     if (applicationCode !== ENV.MENTOR_APPLICATION_PASSWORD) {
       return res.status(400).send({
         success: false,
         error: `Incorrect mentor application code. Got \"${applicationCode}\"`,
-      } as LoginValidationResponse);
+      } as LoginResponse);
     }
 
-    const computingID = systemRequest.user.computingID;
-    const userData = await getUser(computingID);
+    const username = systemRequest.user.username;
+    const userData = await getUser(username);
 
     if (userData.user!.role === "mentor") {
       return res.status(400).send({
         success: false,
         error: "Already a mentor",
-      } as LoginValidationResponse);
+      } as LoginResponse);
     }
 
     const mentorRole: UserRole = "mentor";
-    const updateSuccess = await updateUser({ computingID, role: mentorRole });
+    const updateSuccess = await updateUser({ username, role: mentorRole });
 
     if (!updateSuccess) {
       return res.status(500).send({
         success: false,
-        error: `Failed to give ${computingID} mentor role`,
-      } as LoginValidationResponse);
+        error: `Failed to give ${username} mentor role`,
+      } as LoginResponse);
     }
 
-    const token = loginTokenGenerator({ computingID, role: mentorRole });
+    const token = loginTokenGenerator({ username, role: mentorRole });
     return res.status(200).json({
       success: true,
       token: token,
-    } as LoginValidationResponse);
+    } as LoginResponse);
   }
 );
 

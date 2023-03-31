@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import { DocumentData, Firestore } from "@google-cloud/firestore";
 import { User, UserRole } from "cmpt474-mm-jwt-middleware";
 import ENV from "../../env";
@@ -8,16 +9,27 @@ const firestore: Firestore = new Firestore({
   timestampsInSnapshots: true,
 });
 
+async function hashPassword(password: string): Promise<string> {
+  return await bcrypt.hash(password, 13);
+}
+
+async function comparePassword(
+  password: string,
+  hash: string
+): Promise<boolean> {
+  return await bcrypt.compare(password, hash);
+}
+
 function getUserCollection(): FirebaseFirestore.CollectionReference<DocumentData> {
   return firestore.collection(ENV.DB_COLLECTION_NAME);
 }
 
-async function getDBUser(computingID: string) {
-  return getUserCollection().where("computingID", "==", computingID).get();
+async function getDBUser(username: string) {
+  return getUserCollection().where("username", "==", username).get();
 }
 
-export async function getUser(computingID: string): Promise<UserResult> {
-  const results = await getDBUser(computingID);
+export async function getUser(username: string): Promise<UserResult> {
+  const results = await getDBUser(username);
 
   if (results.empty) {
     return {
@@ -30,23 +42,51 @@ export async function getUser(computingID: string): Promise<UserResult> {
   return {
     found: true,
     user: {
-      computingID,
+      username,
+      authHash: data.authHash,
       role: data.role as UserRole,
     },
   };
 }
 
-export async function doesUserExist(computingID: string): Promise<boolean> {
-  return (await getUser(computingID)).found;
+export async function findUser(
+  username: string,
+  candidatePassword: string
+): Promise<UserResult> {
+  const user = await getUser(username);
+
+  if (!user.found) {
+    return {
+      found: false,
+    };
+  }
+
+  if (await comparePassword(candidatePassword, user.user!.authHash)) {
+    return user;
+  }
+
+  return {
+    found: false,
+  };
 }
 
-export async function registerUser(computingID: string): Promise<boolean> {
-  if (await doesUserExist(computingID)) {
+export async function doesUserExist(username: string): Promise<boolean> {
+  return (await getUser(username)).found;
+}
+
+export async function registerUser(
+  username: string,
+  password: string
+): Promise<boolean> {
+  if (await doesUserExist(username)) {
     return false;
   }
 
+  const passwordHash = await hashPassword(password);
+
   const user: User = {
-    computingID,
+    username,
+    authHash: passwordHash,
     role: "student",
   };
 
@@ -54,7 +94,7 @@ export async function registerUser(computingID: string): Promise<boolean> {
 }
 
 async function addUser(user: User) {
-  if (await doesUserExist(user.computingID)) {
+  if (await doesUserExist(user.username)) {
     return false;
   }
 
@@ -68,8 +108,8 @@ async function addUser(user: User) {
   }
 }
 
-export async function updateUser(user: User): Promise<boolean> {
-  const dbData = await getDBUser(user.computingID);
+export async function updateUser(user: Partial<User>): Promise<boolean> {
+  const dbData = await getDBUser(user.username!);
 
   if (dbData.empty) {
     return false;
