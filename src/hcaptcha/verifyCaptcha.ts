@@ -11,10 +11,14 @@ export async function verifyCaptcha(clientResponse: string, source: string) {
   }
 
   try {
-    const response = await axios.post("https://hcaptcha.com/siteverify", {
+    const params = new URLSearchParams({
       response: clientResponse,
       secret: ENV.HCAPTCHA_VERIFY_KEY,
     });
+    const response = await axios.post(
+      "https://hcaptcha.com/siteverify",
+      params
+    );
 
     console.log("CAPTCHA RESPONSE", response.data?.success, response.data);
 
