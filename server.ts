@@ -96,24 +96,43 @@ app.post("/api/login/signup", async (req: Request, res: Response) => {
   const { username, password, captchaResponse } = req.body;
 
   if (!username || !password || !captchaResponse) {
-    return res.status(400).send("Invalid user signup request");
+    return res.status(400).json({
+      success: false,
+      error: "Invalid sign up request",
+    } as LoginResponse);
   }
 
   if (!(await verifyCaptcha(captchaResponse, "TODO"))) {
     return res
       .status(400)
-      .send({ success: false, error: "Invalid captcha" } as LoginResponse);
+      .json({ success: false, error: "Invalid captcha" } as LoginResponse);
   }
 
   if (await doesUserExist(username)) {
-    return res.status(400).send("User already exists");
+    return res.status(400).json({
+      success: false,
+      error: "User already exists",
+    } as LoginResponse);
   }
 
   if (await registerUser(username, password)) {
-    return res.status(200).send(); // TODO: Response with captcha bypass JWT
+    const userData = await findUser(username, password);
+    const userTokenData: UserToken = {
+      username: username,
+      role: userData.user!.role!,
+    };
+    const token = loginTokenGenerator(userTokenData);
+
+    return res.status(200).json({
+      success: true,
+      token: token,
+    } as LoginResponse);
   }
 
-  return res.status(500).send();
+  return res.status(500).json({
+    success: false,
+    error: "Failed to sign up",
+  } as LoginResponse);
 });
 
 const loginValidator = validateLoginToken(LOGIN_TOKEN_VALIDATION_PARAMETERS);
