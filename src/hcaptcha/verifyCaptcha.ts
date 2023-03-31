@@ -29,8 +29,8 @@ export async function verifyCaptcha(clientResponse: string, referrer: string) {
       params
     );
 
-    const { success, hostname } = response.data;
-    const successfulCaptcha = success === true && hostname === "appspot.com"; // Only accept Google App engine direct deploy
+    const { success } = response.data;
+    const successfulCaptcha = success === true;
 
     console.log(
       successfulCaptcha ? "USERS: Captcha verified" : "USERS: Captcha failed"
