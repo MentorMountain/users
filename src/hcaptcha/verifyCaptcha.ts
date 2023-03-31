@@ -10,7 +10,6 @@ export async function verifyCaptcha(clientResponse: string, referrer: string) {
     referrer.startsWith(LOCALHOST_CLIENT)
   ) {
     console.warn("USERS: ACCEPTING CAPTCHA TEST RESPONSE");
-    // TODO check source
     return true;
   }
 
