@@ -110,7 +110,7 @@ app.post("/api/login/signup", async (req: Request, res: Response) => {
   }
 
   if (await registerUser(username, password)) {
-    return res.status(200).send();
+    return res.status(200).send(); // TODO: Response with captcha bypass JWT
   }
 
   return res.status(500).send();
