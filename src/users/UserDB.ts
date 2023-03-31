@@ -53,16 +53,16 @@ export async function findUser(
   username: string,
   candidatePassword: string
 ): Promise<UserResult> {
-  const user = await getUser(username);
+  const userData = await getUser(username);
 
-  if (!user.found) {
+  if (!userData.found) {
     return {
       found: false,
     };
   }
 
-  if (await comparePassword(candidatePassword, user.user!.authHash)) {
-    return user;
+  if (await comparePassword(candidatePassword, userData.user!.authHash)) {
+    return userData;
   }
 
   return {

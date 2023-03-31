@@ -65,9 +65,10 @@ app.post("/api/login", async (req: Request, res: Response) => {
 
   const userData = await findUser(username, password);
   if (!userData.found) {
-    return res
-      .status(400)
-      .send({ success: false, error: "User doesn't exist" } as LoginResponse);
+    return res.status(401).send({
+      success: false,
+      error: "Invalid login credentials",
+    } as LoginResponse);
   }
 
   const userTokenData: UserToken = {
