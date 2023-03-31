@@ -19,6 +19,7 @@ import {
   updateUser,
 } from "./src/users/UserDB";
 import { UserToken } from "cmpt474-mm-jwt-middleware/src/User";
+import { verifyCaptcha } from "./src/hcaptcha/verifyCaptcha";
 
 const app: Application = express();
 const port: number = (process.env.PORT && parseInt(process.env.PORT)) || 8080;
@@ -54,13 +55,19 @@ const loginTokenGenerator = (loginParameters: LoginParameters) =>
   generateLoginToken(loginParameters, LOGIN_TOKEN_VALIDATION_PARAMETERS);
 
 app.post("/api/login", async (req: Request, res: Response) => {
-  const { username, password } = req.body;
+  const { username, password, captchaResponse } = req.body;
 
-  if (!username || !password) {
+  if (!username || !password || !captchaResponse) {
     return res.status(400).send({
       success: false,
       error: "Invalid login request",
     } as LoginResponse);
+  }
+
+  if (!(await verifyCaptcha(captchaResponse, "TODO"))) {
+    return res
+      .status(400)
+      .send({ success: false, error: "Invalid captcha" } as LoginResponse);
   }
 
   const userData = await findUser(username, password);
@@ -86,10 +93,16 @@ app.post("/api/login", async (req: Request, res: Response) => {
 });
 
 app.post("/api/login/signup", async (req: Request, res: Response) => {
-  const { username, password } = req.body;
+  const { username, password, captchaResponse } = req.body;
 
-  if (!username || !password) {
+  if (!username || !password || !captchaResponse) {
     return res.status(400).send("Invalid user signup request");
+  }
+
+  if (!(await verifyCaptcha(captchaResponse, "TODO"))) {
+    return res
+      .status(400)
+      .send({ success: false, error: "Invalid captcha" } as LoginResponse);
   }
 
   if (await doesUserExist(username)) {
