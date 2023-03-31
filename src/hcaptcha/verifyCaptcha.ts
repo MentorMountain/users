@@ -14,6 +14,7 @@ export async function verifyCaptcha(clientResponse: string, referrer: string) {
   }
 
   if (referrer.length === 0 || !referrer.startsWith(ENV.WEBAPP_DOMAIN)) {
+    console.warn("USERS: Wrong captcha referrer", referrer);
     return false;
   }
 
