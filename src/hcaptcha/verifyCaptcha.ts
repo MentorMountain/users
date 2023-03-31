@@ -5,7 +5,7 @@ const TEST_CLIENT_RESPONSE = "10000000-aaaa-bbbb-cccc-000000000001";
 
 export async function verifyCaptcha(clientResponse: string, source: string) {
   if (clientResponse === TEST_CLIENT_RESPONSE) {
-    console.warn("ACCEPTING CAPTCHA TEST RESPONSE");
+    console.warn("USERS: ACCEPTING CAPTCHA TEST RESPONSE");
     // TODO check source
     return true;
   }
@@ -22,7 +22,13 @@ export async function verifyCaptcha(clientResponse: string, source: string) {
     );
 
     const { success, hostname } = response.data;
-    return success === true && hostname === "appspot.com";
+    const successfulCaptcha = success === true && hostname === "appspot.com"; // Only accept Google App engine direct deploy
+
+    console.log(
+      successfulCaptcha ? "USERS: Captcha verified" : "USERS: Captcha failed"
+    );
+
+    return successfulCaptcha;
   } catch (e) {
     console.log("CAPTCHA ERROR", e);
     return false;
