@@ -16,7 +16,7 @@ export async function verifyCaptcha(clientResponse: string, source: string) {
       secret: ENV.HCAPTCHA_VERIFY_KEY,
     });
 
-    console.log("CAPTCHA RESPONSE", response, response.data);
+    console.log("CAPTCHA RESPONSE", response.data?.success, response.data);
 
     return response.data?.success === true;
   } catch (e) {
