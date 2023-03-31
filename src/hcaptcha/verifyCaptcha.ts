@@ -5,6 +5,7 @@ const TEST_CLIENT_RESPONSE = "10000000-aaaa-bbbb-cccc-000000000001";
 
 export async function verifyCaptcha(clientResponse: string, source: string) {
   if (clientResponse === TEST_CLIENT_RESPONSE) {
+    console.warn("ACCEPTING CAPTCHA TEST RESPONSE");
     // TODO check source
     return true;
   }
