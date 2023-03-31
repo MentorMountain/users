@@ -5,7 +5,7 @@ const TEST_CLIENT_RESPONSE = "10000000-aaaa-bbbb-cccc-000000000001";
 const LOCALHOST_CLIENT = "http://localhost:3000";
 
 export async function verifyCaptcha(clientResponse: string, referrer: string) {
-  if (!referrer.startsWith(ENV.WEBAPP_DOMAIN)) {
+  if (referrer.length === 0 || !referrer.startsWith(ENV.WEBAPP_DOMAIN)) {
     return false;
   }
 
