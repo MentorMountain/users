@@ -55,6 +55,7 @@ const loginTokenGenerator = (loginParameters: LoginParameters) =>
   generateLoginToken(loginParameters, LOGIN_TOKEN_VALIDATION_PARAMETERS);
 
 app.post("/api/login", async (req: Request, res: Response) => {
+  console.log("USERS: Processing login request from", req.headers.host);
   const { username, password, captchaResponse } = req.body;
 
   if (!username || !password || !captchaResponse) {
