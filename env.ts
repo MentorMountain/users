@@ -10,7 +10,8 @@ const ENV = {
   WEBAPP_DOMAIN: process.env.WEBAPP_DOMAIN || "http://localhost",
   PROJECT_ID: process.env.PROJECT_ID || DEFAULT,
   DB_COLLECTION_NAME: process.env.DB_COLLECTION_NAME || DEFAULT,
-  HCAPTCHA_VERIFY_KEY: process.env.HCAPTCHA_VERIFY_KEY || DEFAULT
+  HCAPTCHA_VERIFY_KEY: process.env.HCAPTCHA_VERIFY_KEY || DEFAULT,
+  HCAPTCHA_SITE_KEY: process.env.HCAPTCHA_SITE_KEY || DEFAULT
 };
 
 for (const [k, v] of Object.entries(ENV)) {

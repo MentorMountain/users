@@ -14,6 +14,7 @@ export async function verifyCaptcha(clientResponse: string, source: string) {
     const params = new URLSearchParams({
       response: clientResponse,
       secret: ENV.HCAPTCHA_VERIFY_KEY,
+      sitekey: ENV.HCAPTCHA_SITE_KEY,
     });
     const response = await axios.post(
       "https://hcaptcha.com/siteverify",
