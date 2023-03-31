@@ -15,6 +15,7 @@ import {
   doesUserExist,
   findUser,
   getUser,
+  isValidUserCredentials,
   registerUser,
   updateUser,
 } from "./src/users/UserDB";
@@ -55,10 +56,13 @@ const loginTokenGenerator = (loginParameters: LoginParameters) =>
   generateLoginToken(loginParameters, LOGIN_TOKEN_VALIDATION_PARAMETERS);
 
 app.post("/api/login", async (req: Request, res: Response) => {
-  console.log("USERS: Processing login request from", req.header('X-Forwarded-Proto'));
+  console.log(
+    "USERS: Processing login request from",
+    req.header("X-Forwarded-Proto")
+  );
   const { username, password, captchaResponse } = req.body;
 
-  if (!username || !password || !captchaResponse) {
+  if (!isValidUserCredentials(username, password) || !captchaResponse) {
     return res.status(400).send({
       success: false,
       error: "Invalid login request",
@@ -96,7 +100,7 @@ app.post("/api/login", async (req: Request, res: Response) => {
 app.post("/api/login/signup", async (req: Request, res: Response) => {
   const { username, password, captchaResponse } = req.body;
 
-  if (!username || !password || !captchaResponse) {
+  if (!isValidUserCredentials(username, password) || !captchaResponse) {
     return res.status(400).json({
       success: false,
       error: "Invalid sign up request",

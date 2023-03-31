@@ -13,6 +13,19 @@ async function hashPassword(password: string): Promise<string> {
   return await bcrypt.hash(password, 13);
 }
 
+const MAX_CREDENTIAL_LENGTH = 128;
+
+export function isValidUserCredentials(username: string, password: string) {
+  return (
+    username &&
+    password &&
+    username.length > 0 &&
+    password.length > 0 &&
+    username.length <= MAX_CREDENTIAL_LENGTH &&
+    password.length <= MAX_CREDENTIAL_LENGTH
+  );
+}
+
 async function comparePassword(
   password: string,
   hash: string
