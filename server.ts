@@ -10,7 +10,9 @@ import {
   UserRole,
   validateLoginToken,
 } from "cmpt474-mm-jwt-middleware";
+import { UserToken } from "cmpt474-mm-jwt-middleware/src/User";
 import ENV from "./env";
+import { verifyCaptcha } from "./src/hcaptcha/verifyCaptcha";
 import {
   doesUserExist,
   findUser,
@@ -19,8 +21,6 @@ import {
   registerUser,
   updateUser,
 } from "./src/users/UserDB";
-import { UserToken } from "cmpt474-mm-jwt-middleware/src/User";
-import { verifyCaptcha } from "./src/hcaptcha/verifyCaptcha";
 
 const app: Application = express();
 const port: number = (process.env.PORT && parseInt(process.env.PORT)) || 8080;
@@ -56,7 +56,7 @@ const loginTokenGenerator = (loginParameters: LoginParameters) =>
   generateLoginToken(loginParameters, LOGIN_TOKEN_VALIDATION_PARAMETERS);
 
 app.post("/api/login", async (req: Request, res: Response) => {
-  console.log("USERS: Processing login request from", req.get("Referrer"));
+  console.log("USERS: Processing login request from", req.get("Referrer"), req.get("X-Forwarded-For"));
   const { username, password, captchaResponse } = req.body;
   const referrer = req.get("Referrer") || "";
 
