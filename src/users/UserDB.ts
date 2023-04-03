@@ -21,6 +21,7 @@ export function isValidUserCredentials(username: string, password: string) {
     password &&
     username.length > 0 &&
     password.length > 0 &&
+    !/\s+/.test(username) &&
     username.length <= MAX_CREDENTIAL_LENGTH &&
     password.length <= MAX_CREDENTIAL_LENGTH
   );
