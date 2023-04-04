@@ -6,11 +6,10 @@ const LOCALHOST_CLIENT = "http://localhost:3000";
 
 export async function verifyCaptcha(clientResponse: string, referrer: string) {
   if (
-    clientResponse === TEST_CLIENT_RESPONSE &&
-    referrer.startsWith(LOCALHOST_CLIENT)
+    clientResponse === TEST_CLIENT_RESPONSE
   ) {
-    console.warn("USERS: ACCEPTING CAPTCHA TEST RESPONSE");
-    return true;
+    console.warn("USERS: REJECTING CAPTCHA TEST RESPONSE");
+    return false;
   }
 
   if (referrer.length === 0 || !referrer.startsWith(ENV.WEBAPP_DOMAIN)) {
